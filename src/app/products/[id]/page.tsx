@@ -1,23 +1,13 @@
-"use client";
-
-import { useParams } from "next/navigation";
-import ProductDetails from "@/components/product-details";
-import { getProductById } from "@/lib/products";
 import { notFound } from "next/navigation";
+import { getProductById } from "@/lib/products";
+import ProductDetails from "@/components/product-details";
 
-export default function ProductPage() {
-  const params = useParams(); // ✅ Get dynamic params from URL
-  const id = params?.id as string; // Ensure id is a string
+export default async function ProductPage({ params }: { params: { id: string } }) {
+  const productId = Number(params.id);
+  if (isNaN(productId)) return notFound();
 
-  if (!id) {
-    notFound();
-  }
-
-  const product = getProductById(Number.parseInt(id));
-
-  if (!product) {
-    notFound();
-  }
+  const product = await getProductById(productId);
+  if (!product) return notFound();
 
   return (
     <div className="container mx-auto py-10 px-4">

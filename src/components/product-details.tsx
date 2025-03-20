@@ -1,27 +1,31 @@
-"use client"
+"use client";
 
-import type { Product } from "@/lib/types"
-import { Button } from "@/components/ui/button"
-import Image from "next/image"
-import { useCart } from "./cart-provider"
-import { formatCurrency } from "@/lib/utils"
-import { useState } from "react"
-import { MinusIcon, PlusIcon } from "lucide-react"
+import type { Product } from "@/lib/types";
+import { Button } from "@/components/ui/button";
+import Image from "next/image";
+import { formatCurrency } from "@/lib/utils";
+import { useState } from "react";
+import { MinusIcon, PlusIcon, HeartIcon } from "lucide-react";
+import { useCart } from "@/context/cartcontext"; 
+import { useWishlist } from "@/context/wishlistcontext"; // ✅ Import wishlist hook
 
 interface ProductDetailsProps {
-  product: Product
+  product: Product;
 }
 
 export default function ProductDetails({ product }: ProductDetailsProps) {
-  const { addToCart } = useCart()
-  const [quantity, setQuantity] = useState(1)
+  const { addToCart } = useCart();
+  const { addToWishlist, wishlist, removeFromWishlist } = useWishlist(); // ✅ Use wishlist hook
+  const [quantity, setQuantity] = useState(1);
 
-  const incrementQuantity = () => setQuantity((prev) => prev + 1)
-  const decrementQuantity = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1))
+  const incrementQuantity = () => setQuantity((prev) => prev + 1);
+  const decrementQuantity = () => setQuantity((prev) => (prev > 1 ? prev - 1 : 1));
 
   const handleAddToCart = () => {
-    addToCart(product, quantity)
-  }
+    addToCart(product, quantity);
+  };
+
+  const isWishlisted = wishlist.some((item) => item.id === product.id);
 
   return (
     <div className="grid md:grid-cols-2 gap-8">
@@ -40,13 +44,6 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         <p className="text-2xl font-semibold text-primary mb-4">{formatCurrency(product.price)}</p>
         <div className="mb-6">
           <p className="text-muted-foreground mb-4">{product.description}</p>
-          {product.features && (
-            <ul className="list-disc pl-5 space-y-1 text-muted-foreground">
-              {product.features.map((feature, index) => (
-                <li key={index}>{feature}</li>
-              ))}
-            </ul>
-          )}
         </div>
         <div className="flex items-center space-x-4 mb-6">
           <div className="flex items-center border rounded-md">
@@ -62,7 +59,20 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
             Add to Cart
           </Button>
         </div>
-        <div className="border-t pt-4">
+        {/* ✅ Wishlist Button */}
+        <Button
+          variant={isWishlisted ? "destructive" : "outline"}
+          size="lg"
+          className="w-full flex items-center justify-center"
+          onClick={() =>
+            isWishlisted ? removeFromWishlist(product.id) : addToWishlist(product)
+          }
+        >
+          <HeartIcon className={`mr-2 ${isWishlisted ? "text-red-500" : "text-gray-500"}`} />
+          {isWishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+        </Button>
+
+        <div className="border-t pt-4 mt-4">
           <p className="text-sm text-muted-foreground">
             <span className="font-medium text-foreground">Category:</span> {product.category}
           </p>
@@ -74,6 +84,5 @@ export default function ProductDetails({ product }: ProductDetailsProps) {
         </div>
       </div>
     </div>
-  )
+  );
 }
-
